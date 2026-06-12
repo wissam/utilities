@@ -71,10 +71,12 @@ def token(args: argparse.Namespace) -> str:
         if value:
             return value
     token_path = Path.home() / ".config" / "linear" / "token"
-    if token_path.exists():
-        value = token_path.read_text(encoding="utf-8").strip()
-        if value:
-            return value
+    legacy_codex_path = Path.home() / "code" / "agents" / "codex" / "linear-api.txt"
+    for path in (token_path, legacy_codex_path):
+        if path.exists():
+            value = path.read_text(encoding="utf-8").strip()
+            if value:
+                return value
     raise SystemExit("missing Linear token: set LINEAR_API_KEY, LINEAR_API_TOKEN, or ~/.config/linear/token")
 
 

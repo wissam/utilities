@@ -24,6 +24,7 @@ The script reads a Linear API token from one of:
 - `LINEAR_API_KEY`
 - `LINEAR_API_TOKEN`
 - `~/.config/linear/token`
+- `~/code/agents/codex/linear-api.txt`
 - `--token-file /path/to/token`
 
 It is read-only and prints compact ranked issue rows.
