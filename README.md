@@ -72,6 +72,11 @@ sonarqube-mcp
 Launches SonarSource's official `mcp/sonarqube` container for Codex or another
 stdio MCP client.
 
+The installed launcher buffers client stdin until the SonarQube MCP container
+logs that its backend is ready. This is needed because Codex sends the MCP
+`initialize` request immediately, while the official container can drop early
+stdio input during backend startup.
+
 The wrapper reads:
 
 - `SONARQUBE_URL`, defaulting to `http://10.0.0.189:9000`
@@ -81,6 +86,7 @@ The wrapper reads:
 - `SONAR_TOKEN_SSH_CONFIG`, defaulting to `/dev/null`
 - `TELEMETRY_DISABLED`, defaulting to `true`
 - `SONARQUBE_MCP_PULL`, defaulting to `missing`
+- `SONARQUBE_MCP_READY_TIMEOUT`, defaulting to `75`
 
 If `SONARQUBE_TOKEN` is not set, the wrapper fetches the scanner token over SSH
 from the SonarQube VM credentials file. It does not store the token in this repo
