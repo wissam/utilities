@@ -48,6 +48,7 @@ The script reads configuration from:
 - `SONAR_TOKEN`, if set locally
 - `SONAR_TOKEN_HOST`, defaulting to `ubuntu@10.0.0.189`
 - `SONAR_TOKEN_FILE`, defaulting to `/home/ubuntu/sonarqube-credentials.txt`
+- `SONAR_TOKEN_SSH_CONFIG`, defaulting to `/dev/null`
 - `VELASTRA_AI_ROOT`, defaulting to `~/code/projects/ai`
 - `VELASTRA_SONAR_REPORT_DIR`, defaulting to `/tmp/velastra-sonar-scan`
 - `VELASTRA_SONAR_INCLUDE_ARCHIVED`, defaulting to `false`
@@ -61,3 +62,39 @@ Logs, generated scanner properties, and Go test coverage logs are written under
 Archived or historical projects under `VELASTRA_AI_ROOT/archive` are skipped by
 default. Set `VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include them in a manual
 scan.
+
+## SonarQube MCP
+
+```sh
+sonarqube-mcp
+```
+
+Launches SonarSource's official `mcp/sonarqube` container for Codex or another
+stdio MCP client.
+
+The wrapper reads:
+
+- `SONARQUBE_URL`, defaulting to `http://10.0.0.189:9000`
+- `SONARQUBE_TOKEN`, if set locally
+- `SONAR_TOKEN_HOST`, defaulting to `ubuntu@10.0.0.189`
+- `SONAR_TOKEN_FILE`, defaulting to `/home/ubuntu/sonarqube-credentials.txt`
+- `SONAR_TOKEN_SSH_CONFIG`, defaulting to `/dev/null`
+- `TELEMETRY_DISABLED`, defaulting to `true`
+
+If `SONARQUBE_TOKEN` is not set, the wrapper fetches the scanner token over SSH
+from the SonarQube VM credentials file. It does not store the token in this repo
+or in the Codex MCP config.
+
+Useful local Community Build tool groups:
+
+- Project search, issue search, rules, measures, quality-gate status, source,
+  SCM info, duplications, and system status/health.
+- System logs/info require SonarQube admin permissions.
+
+Likely not useful locally or edition-dependent:
+
+- SonarQube Cloud organization/portfolio workflows.
+- Pull request and branch workflows unless the local project has branch/PR
+  analysis support and data.
+- Advanced context-augmentation/security tools may require mounted workspace
+  data, Cloud, Enterprise, or Advanced Security features.

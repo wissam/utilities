@@ -157,16 +157,15 @@ def compact(issue: dict, index: int) -> str:
     )
 
 
-def main() -> int:
+def main() -> None:
     args = parse_args()
     issues = fetch(args)
     if args.json:
         print(json.dumps(issues, indent=2))
-        return 0
+        return
     for index, issue in enumerate(issues, 1):
         print(compact(issue, index))
-    return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

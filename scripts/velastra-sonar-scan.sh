@@ -5,12 +5,13 @@ SONAR_HOST_URL="${SONAR_HOST_URL:-http://10.0.0.189:9000}"
 SONAR_TOKEN="${SONAR_TOKEN:-}"
 SONAR_TOKEN_HOST="${SONAR_TOKEN_HOST:-ubuntu@10.0.0.189}"
 SONAR_TOKEN_FILE="${SONAR_TOKEN_FILE:-/home/ubuntu/sonarqube-credentials.txt}"
+SONAR_TOKEN_SSH_CONFIG="${SONAR_TOKEN_SSH_CONFIG:-/dev/null}"
 ROOT="${VELASTRA_AI_ROOT:-/home/wissam/code/projects/ai}"
 REPORT_DIR="${VELASTRA_SONAR_REPORT_DIR:-/tmp/velastra-sonar-scan}"
 INCLUDE_ARCHIVED="${VELASTRA_SONAR_INCLUDE_ARCHIVED:-false}"
 
 if [[ -z "$SONAR_TOKEN" ]]; then
-  SONAR_TOKEN="$(ssh "$SONAR_TOKEN_HOST" "awk -F= '/^scanner_token=/ {print \$2; exit}' '$SONAR_TOKEN_FILE'")"
+  SONAR_TOKEN="$(ssh -F "$SONAR_TOKEN_SSH_CONFIG" "$SONAR_TOKEN_HOST" "awk -F= '/^scanner_token=/ {print \$2; exit}' '$SONAR_TOKEN_FILE'")"
 fi
 
 if [[ -z "$SONAR_TOKEN" ]]; then
