@@ -80,10 +80,16 @@ The wrapper reads:
 - `SONAR_TOKEN_FILE`, defaulting to `/home/ubuntu/sonarqube-credentials.txt`
 - `SONAR_TOKEN_SSH_CONFIG`, defaulting to `/dev/null`
 - `TELEMETRY_DISABLED`, defaulting to `true`
+- `SONARQUBE_MCP_PULL`, defaulting to `missing`
 
 If `SONARQUBE_TOKEN` is not set, the wrapper fetches the scanner token over SSH
 from the SonarQube VM credentials file. It does not store the token in this repo
 or in the Codex MCP config.
+
+The default pull policy avoids checking for a new container image on every MCP
+startup while still pulling the image if it is missing. Set
+`SONARQUBE_MCP_PULL=always` for explicit upgrades or `SONARQUBE_MCP_PULL=never`
+for the fastest local startup.
 
 Useful local Community Build tool groups:
 
