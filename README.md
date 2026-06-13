@@ -50,9 +50,13 @@ The script reads configuration from:
 - `SONAR_TOKEN_FILE`, defaulting to `/home/ubuntu/sonarqube-credentials.txt`
 - `VELASTRA_AI_ROOT`, defaulting to `~/code/projects/ai`
 - `VELASTRA_SONAR_REPORT_DIR`, defaulting to `/tmp/velastra-sonar-scan`
+- `VELASTRA_SONAR_INCLUDE_ARCHIVED`, defaulting to `false`
 
 If `SONAR_TOKEN` is not set, the script fetches the scanner token over SSH from
 the SonarQube VM credentials file. It does not store the token in this repo.
 
 Logs, generated scanner properties, and Go test coverage logs are written under
 `VELASTRA_SONAR_REPORT_DIR`.
+
+Archived or historical projects are skipped by default. Set
+`VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include them in a manual scan.

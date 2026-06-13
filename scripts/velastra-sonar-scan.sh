@@ -7,6 +7,7 @@ SONAR_TOKEN_HOST="${SONAR_TOKEN_HOST:-ubuntu@10.0.0.189}"
 SONAR_TOKEN_FILE="${SONAR_TOKEN_FILE:-/home/ubuntu/sonarqube-credentials.txt}"
 ROOT="${VELASTRA_AI_ROOT:-/home/wissam/code/projects/ai}"
 REPORT_DIR="${VELASTRA_SONAR_REPORT_DIR:-/tmp/velastra-sonar-scan}"
+INCLUDE_ARCHIVED="${VELASTRA_SONAR_INCLUDE_ARCHIVED:-false}"
 
 if [[ -z "$SONAR_TOKEN" ]]; then
   SONAR_TOKEN="$(ssh "$SONAR_TOKEN_HOST" "awk -F= '/^scanner_token=/ {print \$2; exit}' '$SONAR_TOKEN_FILE'")"
@@ -121,9 +122,14 @@ scan_project "codex-dispatch" "codex-dispatch" "$ROOT/codex-dispatch" "." "" fal
 scan_project "ai-utilities" "ai utilities" "$ROOT/utilities" "scripts,README.md,AGENTS.md" "" false || failures=$((failures + 1))
 scan_project "hermes-skills-velastra" "hermes-skills-velastra" "$ROOT/hermes-skills-velastra" "." "" false || failures=$((failures + 1))
 scan_project "velmemory-openclaw" "velmemory-openclaw" "$ROOT/velmemory-openclaw" "." "" false || failures=$((failures + 1))
-scan_project "velfoundation" "velfoundation" "$ROOT/velfoundation" "." "" false || failures=$((failures + 1))
 scan_project "velprime" "velprime" "$ROOT/velprime" "plans,scripts,reports,README.md,VELPRIME.md" "" false || failures=$((failures + 1))
 scan_project "ai-skills" "ai-skills" "$ROOT/ai-skills" "." "" false || failures=$((failures + 1))
+
+if [[ "$INCLUDE_ARCHIVED" == "true" ]]; then
+  scan_project "velfoundation" "velfoundation" "$ROOT/velfoundation" "." "" false || failures=$((failures + 1))
+else
+  echo "skip archived project: velfoundation (set VELASTRA_SONAR_INCLUDE_ARCHIVED=true to scan)"
+fi
 
 echo "reports: $REPORT_DIR"
 exit "$failures"
