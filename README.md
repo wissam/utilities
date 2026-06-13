@@ -58,5 +58,6 @@ the SonarQube VM credentials file. It does not store the token in this repo.
 Logs, generated scanner properties, and Go test coverage logs are written under
 `VELASTRA_SONAR_REPORT_DIR`.
 
-Archived or historical projects are skipped by default. Set
-`VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include them in a manual scan.
+Archived or historical projects under `VELASTRA_AI_ROOT/archive` are skipped by
+default. Set `VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include them in a manual
+scan.
