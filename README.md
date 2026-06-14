@@ -33,6 +33,21 @@ The Codex Linear MCP plugin uses its own managed authentication. That token is
 not exposed to shell scripts, so this helper needs a separate local Linear API
 token when run outside MCP.
 
+## Codex Git Push
+
+```sh
+codex-git-push
+codex-git-push origin main
+```
+
+Runs `git push` with `GIT_SSH_COMMAND="ssh -F /dev/null"` so Codex can push
+without reading global OpenSSH config includes from `/etc/ssh/ssh_config.d`.
+
+This exists because Codex's sandbox can expose packaged system files as
+`nobody:nobody`, causing OpenSSH to reject otherwise valid global config files.
+The wrapper affects only the push command it runs; it does not modify host SSH
+configuration.
+
 ## Velastra SonarQube
 
 ```sh
