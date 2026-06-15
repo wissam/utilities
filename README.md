@@ -57,6 +57,15 @@ velastra-sonar-scan
 Runs SonarQube scans for the current Velastra dogfood repos and modules,
 including Go coverage generation where applicable.
 
+Useful scoped runs:
+
+```sh
+velastra-sonar-scan --list
+velastra-sonar-scan --dry-run --project velcontext
+velastra-sonar-scan --project velmemory --project velcontext
+velastra-sonar-scan --include-archived --project velfoundation
+```
+
 The script reads configuration from:
 
 - `SONAR_HOST_URL`, defaulting to `http://10.0.0.189:9000`
@@ -77,6 +86,12 @@ Logs, generated scanner properties, and Go test coverage logs are written under
 Archived or historical projects under `VELASTRA_AI_ROOT/archive` are skipped by
 default. Set `VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include them in a manual
 scan.
+
+Default exclusions intentionally skip raw/archive payloads, compressed export
+artifacts, `.repo-memory`, local virtualenvs, coverage files, generated web
+build output, and dependency folders. This keeps scans focused on maintained
+source instead of historical ChatGPT exports, binary archives, or generated
+state.
 
 ## SonarQube MCP
 

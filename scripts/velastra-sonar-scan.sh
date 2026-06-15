@@ -9,12 +9,98 @@ SONAR_TOKEN_SSH_CONFIG="${SONAR_TOKEN_SSH_CONFIG:-/dev/null}"
 ROOT="${VELASTRA_AI_ROOT:-/home/wissam/code/projects/ai}"
 REPORT_DIR="${VELASTRA_SONAR_REPORT_DIR:-/tmp/velastra-sonar-scan}"
 INCLUDE_ARCHIVED="${VELASTRA_SONAR_INCLUDE_ARCHIVED:-false}"
+DRY_RUN=false
+LIST_ONLY=false
+PROJECT_FILTERS=()
 
-if [[ -z "$SONAR_TOKEN" ]]; then
+usage() {
+  cat <<'EOF'
+usage: velastra-sonar-scan [options]
+
+Run SonarQube scans for Velastra dogfood repos/modules.
+
+options:
+  --project KEY        Scan only the matching project key. Repeatable.
+  --list               List configured project keys and exit.
+  --dry-run            Print selected scans without running tests or scanner.
+  --include-archived   Include archived historical projects for this run.
+  --report-dir DIR     Write logs/generated scanner configs under DIR.
+  -h, --help           Show this help.
+
+environment:
+  SONAR_HOST_URL
+  SONAR_TOKEN
+  SONAR_TOKEN_HOST
+  SONAR_TOKEN_FILE
+  SONAR_TOKEN_SSH_CONFIG
+  VELASTRA_AI_ROOT
+  VELASTRA_SONAR_REPORT_DIR
+  VELASTRA_SONAR_INCLUDE_ARCHIVED
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --project)
+      if [[ $# -lt 2 || "$2" == --* ]]; then
+        echo "--project requires a project key" >&2
+        exit 2
+      fi
+      PROJECT_FILTERS+=("$2")
+      shift 2
+      ;;
+    --list)
+      LIST_ONLY=true
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --include-archived)
+      INCLUDE_ARCHIVED=true
+      shift
+      ;;
+    --report-dir)
+      if [[ $# -lt 2 || "$2" == --* ]]; then
+        echo "--report-dir requires a directory" >&2
+        exit 2
+      fi
+      REPORT_DIR="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
+
+selected_project() {
+  local key="$1"
+  local filter
+
+  if [[ ${#PROJECT_FILTERS[@]} -eq 0 ]]; then
+    return 0
+  fi
+  for filter in "${PROJECT_FILTERS[@]}"; do
+    if [[ "$filter" == "$key" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+if [[ "$LIST_ONLY" != "true" && "$DRY_RUN" != "true" && -z "$SONAR_TOKEN" ]]; then
   SONAR_TOKEN="$(ssh -F "$SONAR_TOKEN_SSH_CONFIG" "$SONAR_TOKEN_HOST" "awk -F= '/^scanner_token=/ {print \$2; exit}' '$SONAR_TOKEN_FILE'")"
 fi
 
-if [[ -z "$SONAR_TOKEN" ]]; then
+if [[ "$LIST_ONLY" != "true" && "$DRY_RUN" != "true" && -z "$SONAR_TOKEN" ]]; then
   echo "SONAR_TOKEN is required, or fetch via SONAR_TOKEN_HOST/SONAR_TOKEN_FILE must work" >&2
   exit 2
 fi
@@ -59,7 +145,7 @@ sonar.projectName=$name
 sonar.sources=$sources
 sonar.tests=$tests
 sonar.test.inclusions=**/*_test.go,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/*.test.js,**/*.spec.js
-sonar.exclusions=bin/**,dist/**,build/**,.repo-memory/**,.venv/**,venv/**,node_modules/**,vendor/**,coverage.out,coverage/**,.next/**,raw/**,batch_outputs/**,*.zip
+sonar.exclusions=bin/**,dist/**,build/**,.repo-memory/**,.venv/**,venv/**,node_modules/**,vendor/**,coverage.out,coverage/**,.next/**,raw/**,**/raw/**,archive/**,**/archive/**,batch_outputs/**,**/batch_outputs/**,*.zip,**/*.zip,*.tar,**/*.tar,*.tar.gz,**/*.tar.gz,*.tgz,**/*.tgz,*.zst,**/*.zst,*.age,**/*.age
 sonar.sourceEncoding=UTF-8
 EOF
 
@@ -79,6 +165,15 @@ scan_project() {
   local log="$REPORT_DIR/$key.log"
   local config="$REPORT_DIR/$key.properties"
 
+  if ! selected_project "$key"; then
+    return 0
+  fi
+
+  if [[ "$LIST_ONLY" == "true" ]]; then
+    printf '%s\t%s\t%s\n' "$key" "$name" "$base_dir"
+    return 0
+  fi
+
   echo "==> scanning $key ($base_dir)"
 
   if [[ ! -d "$base_dir" ]]; then
@@ -96,6 +191,11 @@ scan_project() {
   fi
 
   write_config "$key" "$name" "$sources" "$tests" "$coverage" "$config"
+
+  if [[ "$DRY_RUN" == "true" ]]; then
+    echo "dry-run $key"
+    return 0
+  fi
 
   if scanner "$base_dir" "$config" >"$log" 2>&1; then
     echo "ok $key"
@@ -128,9 +228,11 @@ scan_project "ai-skills" "ai-skills" "$ROOT/ai-skills" "." "" false || failures=
 if [[ "$INCLUDE_ARCHIVED" == "true" ]]; then
   scan_project "velfoundation" "velfoundation" "$ROOT/archive/velfoundation" "." "" false || failures=$((failures + 1))
   scan_project "velprime" "velprime" "$ROOT/archive/velprime" "plans,scripts,reports,README.md,VELPRIME.md" "" false || failures=$((failures + 1))
-else
+elif [[ "$LIST_ONLY" != "true" ]]; then
   echo "skip archived projects: velfoundation, velprime (set VELASTRA_SONAR_INCLUDE_ARCHIVED=true to scan)"
 fi
 
-echo "reports: $REPORT_DIR"
+if [[ "$LIST_ONLY" != "true" ]]; then
+  echo "reports: $REPORT_DIR"
+fi
 exit "$failures"
