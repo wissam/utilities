@@ -54,8 +54,10 @@ configuration.
 velastra-sonar-scan
 ```
 
-Runs SonarQube scans for the current Velastra dogfood repos and modules,
-including Go coverage generation where applicable.
+Runs SonarQube scans for the current Velastra dogfood code repos and modules,
+including Go coverage generation where applicable. Standalone documentation,
+skill, report, and historical archive repos are intentionally not part of the
+default scan set.
 
 Useful scoped runs:
 
@@ -85,14 +87,17 @@ Logs, generated scanner properties, and Go test coverage logs are written under
 `VELASTRA_SONAR_REPORT_DIR`.
 
 Archived or historical projects under `VELASTRA_AI_ROOT/archive` are skipped by
-default. Set `VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include them in a manual
+default. Standalone docs/skills/report repos such as `ai-skills`,
+`hermes-skills-velastra`, `velastra-root`, and `velseed-worker-reports` are not
+default Sonar targets because their findings are mostly dashboard noise. Set
+`VELASTRA_SONAR_INCLUDE_ARCHIVED=true` to include archived projects in a manual
 scan.
 
 Default exclusions intentionally skip raw/archive payloads, compressed export
-artifacts, `.repo-memory`, local virtualenvs, coverage files, generated web
-build output, and dependency folders. This keeps scans focused on maintained
-source instead of historical ChatGPT exports, binary archives, or generated
-state.
+artifacts, generated protobuf Go files, `.repo-memory`, local virtualenvs,
+coverage files, generated web build output, and dependency folders. This keeps
+scans focused on maintained source instead of historical ChatGPT exports,
+binary archives, generated code, or generated state.
 
 ## SonarQube MCP
 

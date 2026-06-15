@@ -145,7 +145,7 @@ sonar.projectName=$name
 sonar.sources=$sources
 sonar.tests=$tests
 sonar.test.inclusions=**/*_test.go,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/*.test.js,**/*.spec.js
-sonar.exclusions=bin/**,dist/**,build/**,.repo-memory/**,.venv/**,venv/**,node_modules/**,vendor/**,coverage.out,coverage/**,.next/**,raw/**,**/raw/**,archive/**,**/archive/**,batch_outputs/**,**/batch_outputs/**,*.zip,**/*.zip,*.tar,**/*.tar,*.tar.gz,**/*.tar.gz,*.tgz,**/*.tgz,*.zst,**/*.zst,*.age,**/*.age
+sonar.exclusions=bin/**,dist/**,build/**,.repo-memory/**,.venv/**,venv/**,node_modules/**,vendor/**,coverage.out,coverage/**,.next/**,raw/**,**/raw/**,archive/**,**/archive/**,batch_outputs/**,**/batch_outputs/**,*.zip,**/*.zip,*.tar,**/*.tar,*.tar.gz,**/*.tar.gz,*.tgz,**/*.tgz,*.zst,**/*.zst,*.age,**/*.age,**/*.pb.go,**/*.pb.*.go
 sonar.sourceEncoding=UTF-8
 EOF
 
@@ -207,24 +207,20 @@ scan_project() {
 
 failures=0
 
-scan_project "repo-memory" "repo-memory" "$ROOT/repo-memory" "cmd,internal,configs,docs" "cmd,internal" true || failures=$((failures + 1))
-scan_project "velmemory" "velmemory" "$ROOT/velmemory" "cmd,internal,deploy,docs,examples,pkg,proto,scripts" "cmd,internal,pkg" true || failures=$((failures + 1))
-scan_project "velcontext" "velcontext" "$ROOT/velcontext" "cmd,internal,docs" "cmd,internal" true || failures=$((failures + 1))
-scan_project "velseed" "velseed" "$ROOT/velseed" "cmd,internal,docs,proto,skills" "cmd,internal" true || failures=$((failures + 1))
+scan_project "repo-memory" "repo-memory" "$ROOT/repo-memory" "cmd,internal,configs" "cmd,internal" true || failures=$((failures + 1))
+scan_project "velmemory" "velmemory" "$ROOT/velmemory" "cmd,internal,deploy,examples,pkg,proto,scripts" "cmd,internal,pkg" true || failures=$((failures + 1))
+scan_project "velcontext" "velcontext" "$ROOT/velcontext" "cmd,internal" "cmd,internal" true || failures=$((failures + 1))
+scan_project "velseed" "velseed" "$ROOT/velseed" "cmd,internal,proto,skills" "cmd,internal" true || failures=$((failures + 1))
 scan_project "velastra-velcore" "velastra / velcore" "$ROOT/velastra/velcore" "." "." true || failures=$((failures + 1))
 scan_project "velastra-velnode" "velastra / velnode" "$ROOT/velastra/velnode" "." "." true || failures=$((failures + 1))
 scan_project "velastra-velctl" "velastra / velctl" "$ROOT/velastra/velctl" "." "." true || failures=$((failures + 1))
 scan_project "velastra-velrouter" "velastra / velrouter" "$ROOT/velastra/velrouter" "." "." true || failures=$((failures + 1))
 scan_project "velastra-vellm" "velastra / vellm" "$ROOT/velastra/vellm" "." "." true || failures=$((failures + 1))
-scan_project "velastra-root" "velastra root docs" "$ROOT/velastra" "cmd,inbox,intent,project,proto,scripts,tasks,README.md,AUDIT.md,FOR_EVA.md" "" false || failures=$((failures + 1))
 scan_project "velastra-codex-plugin" "velastra-codex-plugin" "$ROOT/velastra-codex-plugin" "." "" false || failures=$((failures + 1))
 scan_project "velastra-matrix-relay" "velastra-matrix-relay" "$ROOT/velastra-matrix-relay" "." "." true || failures=$((failures + 1))
 scan_project "velastrasystems" "velastrasystems" "$ROOT/velastrasystems" "src,public,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json" "" false || failures=$((failures + 1))
 scan_project "codex-dispatch" "codex-dispatch" "$ROOT/codex-dispatch" "." "" false || failures=$((failures + 1))
-scan_project "ai-utilities" "ai utilities" "$ROOT/utilities" "scripts,README.md,AGENTS.md" "" false || failures=$((failures + 1))
-scan_project "hermes-skills-velastra" "hermes-skills-velastra" "$ROOT/hermes-skills-velastra" "." "" false || failures=$((failures + 1))
 scan_project "velmemory-openclaw" "velmemory-openclaw" "$ROOT/velmemory-openclaw" "." "" false || failures=$((failures + 1))
-scan_project "ai-skills" "ai-skills" "$ROOT/ai-skills" "." "" false || failures=$((failures + 1))
 
 if [[ "$INCLUDE_ARCHIVED" == "true" ]]; then
   scan_project "velfoundation" "velfoundation" "$ROOT/archive/velfoundation" "." "" false || failures=$((failures + 1))
