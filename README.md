@@ -62,6 +62,7 @@ Useful scoped runs:
 ```sh
 velastra-sonar-scan --list
 velastra-sonar-scan --dry-run --project velcontext
+velastra-sonar-scan --project repo-memory
 velastra-sonar-scan --project velmemory --project velcontext
 velastra-sonar-scan --include-archived --project velfoundation
 ```

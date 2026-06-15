@@ -207,6 +207,7 @@ scan_project() {
 
 failures=0
 
+scan_project "repo-memory" "repo-memory" "$ROOT/repo-memory" "cmd,internal,configs,docs" "cmd,internal" true || failures=$((failures + 1))
 scan_project "velmemory" "velmemory" "$ROOT/velmemory" "cmd,internal,deploy,docs,examples,pkg,proto,scripts" "cmd,internal,pkg" true || failures=$((failures + 1))
 scan_project "velcontext" "velcontext" "$ROOT/velcontext" "cmd,internal,docs" "cmd,internal" true || failures=$((failures + 1))
 scan_project "velseed" "velseed" "$ROOT/velseed" "cmd,internal,docs,proto,skills" "cmd,internal" true || failures=$((failures + 1))
