@@ -67,6 +67,8 @@ velastra-sonar-scan --dry-run --project velcontext
 velastra-sonar-scan --project repo-memory
 velastra-sonar-scan --project velmemory --project velcontext
 velastra-sonar-scan --include-archived --project velfoundation
+velastra-sonar-summary --format markdown --output /tmp/velastra-sonar-scan/summary.md
+velastra-sonar-summary --format json --output /tmp/velastra-sonar-scan/summary.json
 ```
 
 The script reads configuration from:
@@ -79,12 +81,30 @@ The script reads configuration from:
 - `VELASTRA_AI_ROOT`, defaulting to `~/code/projects/ai`
 - `VELASTRA_SONAR_REPORT_DIR`, defaulting to `/tmp/velastra-sonar-scan`
 - `VELASTRA_SONAR_INCLUDE_ARCHIVED`, defaulting to `false`
+- `VELASTRA_SONAR_PROJECTS_FILE`, defaulting to `config/velastra-sonar-projects.tsv`
 
 If `SONAR_TOKEN` is not set, the script fetches the scanner token over SSH from
 the SonarQube VM credentials file. It does not store the token in this repo.
 
 Logs, generated scanner properties, and Go test coverage logs are written under
-`VELASTRA_SONAR_REPORT_DIR`.
+`VELASTRA_SONAR_REPORT_DIR`. Each scanned git repo also gets a
+`<project>.git.json` metadata file recording branch, commit, and whether the
+working tree was dirty. Dirty repositories are still scanned, but the script
+prints a warning so dashboard findings are not confused with committed-main
+quality.
+
+Project definitions live in `config/velastra-sonar-projects.tsv` in this repo
+and are installed to `~/.local/share/velastra-sonar/projects.tsv`. The scanner
+script reads that file instead of keeping the repo/module list in shell code.
+Use `--projects-file` or `VELASTRA_SONAR_PROJECTS_FILE` for local experiments.
+
+`velastra-sonar-summary` exports the current SonarQube metrics and open issue
+counts for the same configured project list. It can write markdown for human
+review or JSON for n8n/future velcore ingestion.
+
+Current execution mode is manual/operator-triggered. Cron, n8n, Gitea/GitHub CI,
+or future velcore/velnode dispatch should wait until the project set and
+expected quality thresholds stabilize.
 
 Archived or historical projects under `VELASTRA_AI_ROOT/archive` are skipped by
 default. Standalone docs/skills/report repos such as `ai-skills`,

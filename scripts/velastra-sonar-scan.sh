@@ -9,6 +9,15 @@ SONAR_TOKEN_SSH_CONFIG="${SONAR_TOKEN_SSH_CONFIG:-/dev/null}"
 ROOT="${VELASTRA_AI_ROOT:-/home/wissam/code/projects/ai}"
 REPORT_DIR="${VELASTRA_SONAR_REPORT_DIR:-/tmp/velastra-sonar-scan}"
 INCLUDE_ARCHIVED="${VELASTRA_SONAR_INCLUDE_ARCHIVED:-false}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+default_projects_file() {
+  if [[ -f "$SCRIPT_DIR/../share/velastra-sonar/projects.tsv" ]]; then
+    printf '%s\n' "$SCRIPT_DIR/../share/velastra-sonar/projects.tsv"
+  else
+    printf '%s\n' "$SCRIPT_DIR/../config/velastra-sonar-projects.tsv"
+  fi
+}
+PROJECTS_FILE="${VELASTRA_SONAR_PROJECTS_FILE:-$(default_projects_file)}"
 DRY_RUN=false
 LIST_ONLY=false
 PROJECT_FILTERS=()
@@ -24,6 +33,7 @@ options:
   --list               List configured project keys and exit.
   --dry-run            Print selected scans without running tests or scanner.
   --include-archived   Include archived historical projects for this run.
+  --projects-file FILE Read project definitions from FILE.
   --report-dir DIR     Write logs/generated scanner configs under DIR.
   -h, --help           Show this help.
 
@@ -36,6 +46,7 @@ environment:
   VELASTRA_AI_ROOT
   VELASTRA_SONAR_REPORT_DIR
   VELASTRA_SONAR_INCLUDE_ARCHIVED
+  VELASTRA_SONAR_PROJECTS_FILE
 EOF
 }
 
@@ -60,6 +71,14 @@ while [[ $# -gt 0 ]]; do
     --include-archived)
       INCLUDE_ARCHIVED=true
       shift
+      ;;
+    --projects-file)
+      if [[ $# -lt 2 || "$2" == --* ]]; then
+        echo "--projects-file requires a file" >&2
+        exit 2
+      fi
+      PROJECTS_FILE="$2"
+      shift 2
       ;;
     --report-dir)
       if [[ $# -lt 2 || "$2" == --* ]]; then
@@ -96,6 +115,52 @@ selected_project() {
   return 1
 }
 
+field_value() {
+  local value="$1"
+  if [[ "$value" == "-" ]]; then
+    printf ''
+  else
+    printf '%s' "$value"
+  fi
+}
+
+bool_true() {
+  case "${1,,}" in
+    1|true|yes|y) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+write_git_metadata() {
+  local key="$1"
+  local base_dir="$2"
+  local out="$REPORT_DIR/$key.git.json"
+  local status branch commit dirty
+
+  if [[ ! -d "$base_dir/.git" ]]; then
+    printf '{"git":false,"dirty":null}\n' > "$out"
+    return 0
+  fi
+
+  branch="$(git -C "$base_dir" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  commit="$(git -C "$base_dir" rev-parse HEAD 2>/dev/null || true)"
+  status="$(git -C "$base_dir" status --porcelain=v1 2>/dev/null || true)"
+  dirty=false
+  if [[ -n "$status" ]]; then
+    dirty=true
+    echo "warning: $key has uncommitted changes; scan includes working tree" >&2
+  fi
+
+  {
+    printf '{\n'
+    printf '  "git": true,\n'
+    printf '  "branch": "%s",\n' "$branch"
+    printf '  "commit": "%s",\n' "$commit"
+    printf '  "dirty": %s\n' "$dirty"
+    printf '}\n'
+  } > "$out"
+}
+
 if [[ "$LIST_ONLY" != "true" && "$DRY_RUN" != "true" && -z "$SONAR_TOKEN" ]]; then
   SONAR_TOKEN="$(ssh -F "$SONAR_TOKEN_SSH_CONFIG" "$SONAR_TOKEN_HOST" "awk -F= '/^scanner_token=/ {print \$2; exit}' '$SONAR_TOKEN_FILE'")"
 fi
@@ -106,6 +171,11 @@ if [[ "$LIST_ONLY" != "true" && "$DRY_RUN" != "true" && -z "$SONAR_TOKEN" ]]; th
 fi
 
 mkdir -p "$REPORT_DIR"
+
+if [[ ! -f "$PROJECTS_FILE" ]]; then
+  echo "project config not found: $PROJECTS_FILE" >&2
+  exit 2
+fi
 
 scanner() {
   local base_dir="$1"
@@ -190,6 +260,7 @@ scan_project() {
     fi
   fi
 
+  write_git_metadata "$key" "$base_dir"
   write_config "$key" "$name" "$sources" "$tests" "$coverage" "$config"
 
   if [[ "$DRY_RUN" == "true" ]]; then
@@ -206,27 +277,22 @@ scan_project() {
 }
 
 failures=0
+archived_skipped=()
 
-scan_project "repo-memory" "repo-memory" "$ROOT/repo-memory" "cmd,internal,configs" "cmd,internal" true || failures=$((failures + 1))
-scan_project "velmemory" "velmemory" "$ROOT/velmemory" "cmd,internal,deploy,examples,pkg,proto,scripts" "cmd,internal,pkg" true || failures=$((failures + 1))
-scan_project "velcontext" "velcontext" "$ROOT/velcontext" "cmd,internal" "cmd,internal" true || failures=$((failures + 1))
-scan_project "velseed" "velseed" "$ROOT/velseed" "cmd,internal,proto,skills" "cmd,internal" true || failures=$((failures + 1))
-scan_project "velastra-velcore" "velastra / velcore" "$ROOT/velastra/velcore" "." "." true || failures=$((failures + 1))
-scan_project "velastra-velnode" "velastra / velnode" "$ROOT/velastra/velnode" "." "." true || failures=$((failures + 1))
-scan_project "velastra-velctl" "velastra / velctl" "$ROOT/velastra/velctl" "." "." true || failures=$((failures + 1))
-scan_project "velastra-velrouter" "velastra / velrouter" "$ROOT/velastra/velrouter" "." "." true || failures=$((failures + 1))
-scan_project "velastra-vellm" "velastra / vellm" "$ROOT/velastra/vellm" "." "." true || failures=$((failures + 1))
-scan_project "velastra-codex-plugin" "velastra-codex-plugin" "$ROOT/velastra-codex-plugin" "." "" false || failures=$((failures + 1))
-scan_project "velastra-matrix-relay" "velastra-matrix-relay" "$ROOT/velastra-matrix-relay" "." "." true || failures=$((failures + 1))
-scan_project "velastrasystems" "velastrasystems" "$ROOT/velastrasystems" "src,public,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json" "" false || failures=$((failures + 1))
-scan_project "codex-dispatch" "codex-dispatch" "$ROOT/codex-dispatch" "." "" false || failures=$((failures + 1))
-scan_project "velmemory-openclaw" "velmemory-openclaw" "$ROOT/velmemory-openclaw" "." "" false || failures=$((failures + 1))
+while IFS=$'\t' read -r key name rel_path sources tests run_tests archived; do
+  if [[ -z "${key:-}" || "$key" == \#* ]]; then
+    continue
+  fi
+  tests="$(field_value "${tests:-}")"
+  if bool_true "${archived:-false}" && ! bool_true "$INCLUDE_ARCHIVED"; then
+    archived_skipped+=("$key")
+    continue
+  fi
+  scan_project "$key" "$name" "$ROOT/$rel_path" "$sources" "$tests" "$run_tests" || failures=$((failures + 1))
+done < "$PROJECTS_FILE"
 
-if [[ "$INCLUDE_ARCHIVED" == "true" ]]; then
-  scan_project "velfoundation" "velfoundation" "$ROOT/archive/velfoundation" "." "" false || failures=$((failures + 1))
-  scan_project "velprime" "velprime" "$ROOT/archive/velprime" "plans,scripts,reports,README.md,VELPRIME.md" "" false || failures=$((failures + 1))
-elif [[ "$LIST_ONLY" != "true" ]]; then
-  echo "skip archived projects: velfoundation, velprime (set VELASTRA_SONAR_INCLUDE_ARCHIVED=true to scan)"
+if [[ "$LIST_ONLY" != "true" && ${#archived_skipped[@]} -gt 0 ]]; then
+  echo "skip archived projects: ${archived_skipped[*]} (set VELASTRA_SONAR_INCLUDE_ARCHIVED=true to scan)"
 fi
 
 if [[ "$LIST_ONLY" != "true" ]]; then

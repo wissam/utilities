@@ -1,0 +1,17 @@
+# key	name	relative_path	sources	tests	run_go_tests	archived
+repo-memory	repo-memory	repo-memory	cmd,internal,configs	cmd,internal	true	false
+velmemory	velmemory	velmemory	cmd,internal,deploy,examples,pkg,proto,scripts	cmd,internal,pkg	true	false
+velcontext	velcontext	velcontext	cmd,internal	cmd,internal	true	false
+velseed	velseed	velseed	cmd,internal,proto,skills	cmd,internal	true	false
+velastra-velcore	velastra / velcore	velastra/velcore	.	.	true	false
+velastra-velnode	velastra / velnode	velastra/velnode	.	.	true	false
+velastra-velctl	velastra / velctl	velastra/velctl	.	.	true	false
+velastra-velrouter	velastra / velrouter	velastra/velrouter	.	.	true	false
+velastra-vellm	velastra / vellm	velastra/vellm	.	.	true	false
+velastra-codex-plugin	velastra-codex-plugin	velastra-codex-plugin	.	-	false	false
+velastra-matrix-relay	velastra-matrix-relay	velastra-matrix-relay	.	.	true	false
+velastrasystems	velastrasystems	velastrasystems	src,public,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json	-	false	false
+codex-dispatch	codex-dispatch	codex-dispatch	.	-	false	false
+velmemory-openclaw	velmemory-openclaw	velmemory-openclaw	.	-	false	false
+velfoundation	velfoundation	archive/velfoundation	.	-	false	true
+velprime	velprime	archive/velprime	plans,scripts,reports,README.md,VELPRIME.md	-	false	true
