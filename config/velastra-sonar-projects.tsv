@@ -12,6 +12,6 @@ velastra-codex-plugin	velastra-codex-plugin	velastra-codex-plugin	.	-	false	fals
 velastra-matrix-relay	velastra-matrix-relay	velastra-matrix-relay	.	.	true	false
 velastrasystems	velastrasystems	velastrasystems	src,public,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json	-	false	false
 codex-dispatch	codex-dispatch	codex-dispatch	.	-	false	false
-velmemory-openclaw	velmemory-openclaw	velmemory-openclaw	.	-	false	false
+velmemory-openclaw	velmemory-openclaw	archive/velmemory-openclaw	.	-	false	true
 velfoundation	velfoundation	archive/velfoundation	.	-	false	true
 velprime	velprime	archive/velprime	plans,scripts,reports,README.md,VELPRIME.md	-	false	true
