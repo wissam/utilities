@@ -1,6 +1,6 @@
-# key	name	relative_path	sources	tests	run_go_tests	archived
+# key	name	relative_path	sources	tests	run_go_tests	archived	coverage_exclusions
 repo-memory	repo-memory	repo-memory	cmd,internal,configs	cmd,internal	true	false
-velmemory	velmemory	velmemory	cmd,internal,deploy,examples,pkg,proto,scripts	cmd,internal,pkg	true	false
+velmemory	velmemory	velmemory	cmd,internal,deploy,examples,pkg,proto,scripts	cmd,internal,pkg	true	false	cmd/velmemory-api/main.go,cmd/velmemory-grpc/main.go,cmd/velmemory-mcp/main.go,cmd/velmemory-mcpd/main.go,cmd/velmemory-migrate-sessionids/main.go,cmd/velmemory-migrate-turns/main.go,cmd/velmemory-reindex/main.go,cmd/velmemory-eval/main.go,examples/**,deploy/**,scripts/**,proto/**
 velcontext	velcontext	velcontext	cmd,internal	cmd,internal	true	false
 velseed	velseed	velseed	cmd,internal,proto,skills	cmd,internal	true	false
 velastra-velcore	velastra / velcore	velastra/velcore	.	.	true	false

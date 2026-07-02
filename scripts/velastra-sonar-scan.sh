@@ -207,7 +207,8 @@ write_config() {
   local sources="$3"
   local tests="$4"
   local coverage="$5"
-  local out="$6"
+  local coverage_exclusions="$6"
+  local out="$7"
 
   cat > "$out" <<EOF
 sonar.projectKey=$key
@@ -222,6 +223,9 @@ EOF
   if [[ -n "$coverage" ]]; then
     printf 'sonar.go.coverage.reportPaths=%s\n' "$coverage" >> "$out"
   fi
+  if [[ -n "$coverage_exclusions" ]]; then
+    printf 'sonar.coverage.exclusions=%s\n' "$coverage_exclusions" >> "$out"
+  fi
 }
 
 scan_project() {
@@ -231,6 +235,7 @@ scan_project() {
   local sources="$4"
   local tests="${5:-}"
   local run_tests="${6:-false}"
+  local coverage_exclusions="${7:-}"
   local coverage=""
   local log="$REPORT_DIR/$key.log"
   local config="$REPORT_DIR/$key.properties"
@@ -261,7 +266,7 @@ scan_project() {
   fi
 
   write_git_metadata "$key" "$base_dir"
-  write_config "$key" "$name" "$sources" "$tests" "$coverage" "$config"
+  write_config "$key" "$name" "$sources" "$tests" "$coverage" "$coverage_exclusions" "$config"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "dry-run $key"
@@ -279,16 +284,17 @@ scan_project() {
 failures=0
 archived_skipped=()
 
-while IFS=$'\t' read -r key name rel_path sources tests run_tests archived; do
+while IFS=$'\t' read -r key name rel_path sources tests run_tests archived coverage_exclusions; do
   if [[ -z "${key:-}" || "$key" == \#* ]]; then
     continue
   fi
   tests="$(field_value "${tests:-}")"
+  coverage_exclusions="$(field_value "${coverage_exclusions:-}")"
   if bool_true "${archived:-false}" && ! bool_true "$INCLUDE_ARCHIVED"; then
     archived_skipped+=("$key")
     continue
   fi
-  scan_project "$key" "$name" "$ROOT/$rel_path" "$sources" "$tests" "$run_tests" || failures=$((failures + 1))
+  scan_project "$key" "$name" "$ROOT/$rel_path" "$sources" "$tests" "$run_tests" "$coverage_exclusions" || failures=$((failures + 1))
 done < "$PROJECTS_FILE"
 
 if [[ "$LIST_ONLY" != "true" && ${#archived_skipped[@]} -gt 0 ]]; then
