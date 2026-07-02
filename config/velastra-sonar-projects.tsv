@@ -9,7 +9,7 @@ velastra-velctl	velastra / velctl	velastra/velctl	.	.	true	false
 velastra-velrouter	velastra / velrouter	velastra/velrouter	.	.	true	false
 velastra-vellm	velastra / vellm	velastra/vellm	.	.	true	false
 velastra-velgraph	velastra / velgraph	velgraph	.	.	true	false
-velastra-codex-plugin	velastra-codex-plugin	velastra-codex-plugin	.	-	false	false
+velastra-codex-plugin	velastra-codex-plugin	velastra-codex-plugin	plugins	tests	true	false
 velastra-matrix-relay	velastra-matrix-relay	velastra-matrix-relay	.	.	true	false
 velastrasystems	velastrasystems	velastrasystems	src,public,index.html,vite.config.ts,tsconfig.json,tsconfig.app.json,tsconfig.node.json	-	false	false
 codex-dispatch	codex-dispatch	codex-dispatch	.	-	false	false

@@ -55,9 +55,11 @@ velastra-sonar-scan
 ```
 
 Runs SonarQube scans for the current Velastra dogfood code repos and modules,
-including Go coverage generation where applicable. Standalone documentation,
-skill, report, and historical archive repos are intentionally not part of the
-default scan set.
+including Go coverage generation where applicable. Non-Go repos can expose a
+repo-local `make coverage` target that writes
+`coverage/sonar-generic-coverage.xml`; the scanner passes that file to
+SonarQube as generic coverage. Standalone documentation, skill, report, and
+historical archive repos are intentionally not part of the default scan set.
 
 Useful scoped runs:
 
@@ -86,7 +88,7 @@ The script reads configuration from:
 If `SONAR_TOKEN` is not set, the script fetches the scanner token over SSH from
 the SonarQube VM credentials file. It does not store the token in this repo.
 
-Logs, generated scanner properties, and Go test coverage logs are written under
+Logs, generated scanner properties, and test coverage logs are written under
 `VELASTRA_SONAR_REPORT_DIR`. Each scanned git repo also gets a
 `<project>.git.json` metadata file recording branch, commit, and whether the
 working tree was dirty. Dirty repositories are still scanned, but the script

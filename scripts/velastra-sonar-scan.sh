@@ -201,27 +201,52 @@ run_go_tests() {
   fi
 }
 
+run_project_coverage() {
+  local base_dir="$1"
+
+  if [[ -f "$base_dir/go.mod" ]]; then
+    run_go_tests "$base_dir"
+    return
+  fi
+
+  if [[ -f "$base_dir/Makefile" ]] && grep -Eq '^coverage:' "$base_dir/Makefile"; then
+    (
+      cd "$base_dir"
+      make coverage
+    )
+  elif [[ -f "$base_dir/Makefile" ]] && grep -Eq '^test:' "$base_dir/Makefile"; then
+    (
+      cd "$base_dir"
+      make test
+    )
+  fi
+}
+
 write_config() {
   local key="$1"
   local name="$2"
   local sources="$3"
   local tests="$4"
   local coverage="$5"
-  local coverage_exclusions="$6"
-  local out="$7"
+  local generic_coverage="$6"
+  local coverage_exclusions="$7"
+  local out="$8"
 
   cat > "$out" <<EOF
 sonar.projectKey=$key
 sonar.projectName=$name
 sonar.sources=$sources
 sonar.tests=$tests
-sonar.test.inclusions=**/*_test.go,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/*.test.js,**/*.spec.js
+sonar.test.inclusions=**/*_test.go,**/*_test.py,**/test_*.py,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx,**/*.test.js,**/*.spec.js
 sonar.exclusions=bin/**,dist/**,build/**,.repo-memory/**,.venv/**,venv/**,node_modules/**,vendor/**,coverage.out,coverage/**,.next/**,raw/**,**/raw/**,archive/**,**/archive/**,batch_outputs/**,**/batch_outputs/**,*.zip,**/*.zip,*.tar,**/*.tar,*.tar.gz,**/*.tar.gz,*.tgz,**/*.tgz,*.zst,**/*.zst,*.age,**/*.age,**/*.pb.go,**/*.pb.*.go,**/internal/graph/seed.go
 sonar.sourceEncoding=UTF-8
 EOF
 
   if [[ -n "$coverage" ]]; then
     printf 'sonar.go.coverage.reportPaths=%s\n' "$coverage" >> "$out"
+  fi
+  if [[ -n "$generic_coverage" ]]; then
+    printf 'sonar.coverageReportPaths=%s\n' "$generic_coverage" >> "$out"
   fi
   if [[ -n "$coverage_exclusions" ]]; then
     printf 'sonar.coverage.exclusions=%s\n' "$coverage_exclusions" >> "$out"
@@ -237,6 +262,7 @@ scan_project() {
   local run_tests="${6:-false}"
   local coverage_exclusions="${7:-}"
   local coverage=""
+  local generic_coverage=""
   local log="$REPORT_DIR/$key.log"
   local config="$REPORT_DIR/$key.properties"
 
@@ -257,16 +283,21 @@ scan_project() {
   fi
 
   if [[ "$run_tests" == "true" ]]; then
-    if run_go_tests "$base_dir" >"$REPORT_DIR/$key.tests.log" 2>&1; then
-      coverage="coverage.out"
+    if run_project_coverage "$base_dir" >"$REPORT_DIR/$key.tests.log" 2>&1; then
+      if [[ -f "$base_dir/coverage.out" ]]; then
+        coverage="coverage.out"
+      fi
+      if [[ -f "$base_dir/coverage/sonar-generic-coverage.xml" ]]; then
+        generic_coverage="coverage/sonar-generic-coverage.xml"
+      fi
     else
-      echo "go tests failed for $key; scanning without coverage" | tee "$REPORT_DIR/$key.tests.failed"
+      echo "tests failed for $key; scanning without coverage" | tee "$REPORT_DIR/$key.tests.failed"
       cat "$REPORT_DIR/$key.tests.log"
     fi
   fi
 
   write_git_metadata "$key" "$base_dir"
-  write_config "$key" "$name" "$sources" "$tests" "$coverage" "$coverage_exclusions" "$config"
+  write_config "$key" "$name" "$sources" "$tests" "$coverage" "$generic_coverage" "$coverage_exclusions" "$config"
 
   if [[ "$DRY_RUN" == "true" ]]; then
     echo "dry-run $key"
