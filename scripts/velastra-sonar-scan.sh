@@ -137,7 +137,7 @@ write_git_metadata() {
   local out="$REPORT_DIR/$key.git.json"
   local status branch commit dirty
 
-  if [[ ! -d "$base_dir/.git" ]]; then
+  if ! git -C "$base_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     printf '{"git":false,"dirty":null}\n' > "$out"
     return 0
   fi
@@ -180,11 +180,21 @@ fi
 scanner() {
   local base_dir="$1"
   local config="$2"
+  local git_common_dir=""
+  local -a git_mount=()
+
+  # A linked worktree's .git file points outside base_dir. Preserve that exact
+  # absolute path in the container so Sonar's JGit scanner can resolve it.
+  if [[ -f "$base_dir/.git" ]]; then
+    git_common_dir="$(git -C "$base_dir" rev-parse --path-format=absolute --git-common-dir)"
+    git_mount=(-v "$git_common_dir:$git_common_dir:ro")
+  fi
 
   docker run --rm \
     -e SONAR_HOST_URL="$SONAR_HOST_URL" \
     -e SONAR_TOKEN="$SONAR_TOKEN" \
     -v "$base_dir:/usr/src:ro" \
+    "${git_mount[@]}" \
     -v "$config:/tmp/sonar-project.properties:ro" \
     sonarsource/sonar-scanner-cli:latest \
     -Dproject.settings=/tmp/sonar-project.properties

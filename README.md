@@ -95,6 +95,11 @@ working tree was dirty. Dirty repositories are still scanned, but the script
 prints a warning so dashboard findings are not confused with committed-main
 quality.
 
+Linked Git worktrees are supported. The scanner mounts the checkout read-only
+and also mounts its shared Git directory at the same absolute path inside the
+container. This lets SonarQube resolve the worktree's `.git` pointer without
+disabling SCM analysis.
+
 Project definitions live in `config/velastra-sonar-projects.tsv` in this repo
 and are installed to `~/.local/share/velastra-sonar/projects.tsv`. The scanner
 script reads that file instead of keeping the repo/module list in shell code.

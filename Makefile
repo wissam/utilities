@@ -2,7 +2,16 @@ PREFIX ?= $(HOME)/.local
 BINDIR ?= $(PREFIX)/bin
 DATADIR ?= $(PREFIX)/share/velastra-sonar
 
-.PHONY: install
+.PHONY: install test
+
+test:
+	./tests/velastra-sonar-scan-test.sh
+	@if command -v shellcheck >/dev/null 2>&1; then \
+		shellcheck scripts/*.sh tests/*.sh; \
+	else \
+		echo "shellcheck not installed; skipping shell lint"; \
+	fi
+
 install:
 	install -d "$(BINDIR)"
 	install -d "$(DATADIR)"
