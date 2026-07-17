@@ -1,0 +1,46 @@
+{
+  "grpc": {
+    "transport": "tcp",
+    "address": "0.0.0.0:8791"
+  },
+  "http": {
+    "address": "127.0.0.1:8796"
+  },
+  "node": {
+    "nodeId": "is01.van.wissam.dev",
+    "siteId": "van",
+    "role": "inference-node",
+    "instanceId": "velcore-is01-1",
+    "velcoreVersion": "v0.1.0-dev"
+  },
+  "peers": [
+    {
+      "nodeId": "local-workstation.van.wissam.dev",
+      "siteId": "van",
+      "role": "developer-workstation",
+      "endpointRef": "10.0.0.160:8792",
+      "address": "10.0.0.160:8792",
+      "transport": "grpc",
+      "trustBoundary": "lan"
+    }
+  ],
+  "velnodes": [
+    {
+      "velnodeId": "jetsonone.van.wissam.dev",
+      "nodeKind": "edge-ai-node",
+      "serviceId": "vellm.jetsonone",
+      "attachedTo": "local-workstation.van.wissam.dev",
+      "attachmentMode": "manual",
+      "leaseOwner": "local-workstation.van.wissam.dev",
+      "leaseExpiresAt": "",
+      "preferredOwner": "local-workstation.van.wissam.dev",
+      "allowedVelcores": [
+        "local-workstation.van.wissam.dev",
+        "is01.van.wissam.dev"
+      ],
+      "endpointRef": "http://10.0.0.185:18766",
+      "address": "http://10.0.0.185:18766",
+      "trustBoundary": "lan"
+    }
+  ]
+}

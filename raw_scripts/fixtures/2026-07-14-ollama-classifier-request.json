@@ -1,0 +1,21 @@
+{
+  "model": "qwen3.5:4b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Classify the request using deterministic signals as evidence. Return JSON only with exactly label, confidence, and reason. label must be one of: use_deterministic_routing, prefer_repo_memory, prefer_velmemory, prefer_hot_state, ask_clarification. confidence must be high, medium, or low. Prefer the deterministic label when evidence is weak. Keep reason under 240 characters."
+    },
+    {
+      "role": "user",
+      "content": "{\"schema_version\":\"vellm.classifier.request.v0\",\"classifier_kind\":\"source_routing\",\"visible_text\":\"what about that thing we discussed?\",\"context_refs\":[\"velcontext:project:velcontext\",\"velcontext:routing:repo-memory -> velmemory\"],\"signals\":{\"cwd\":\"/home/wissam/code/projects/ai/velcontext\",\"selected_profiles\":[\"coding/repo\"],\"selected_sources\":[\"repo-memory\",\"velmemory\"],\"degraded_sources\":[],\"skipped_sources\":[\"homelab-capabilities\",\"signal-vault\",\"linear\"],\"has_question\":true,\"has_path_like\":false,\"has_concrete_target\":false,\"has_weak_referent\":true,\"continuation_score\":70,\"request_score\":10,\"source_availability_len\":5},\"risk_level\":\"medium\",\"privacy_scope\":\"private_local\",\"allowed_labels\":[\"use_deterministic_routing\",\"prefer_repo_memory\",\"prefer_velmemory\",\"prefer_hot_state\",\"ask_clarification\"],\"fallback_label\":\"use_deterministic_routing\",\"policy_version\":\"velcontext-route-adjudicator-v0\",\"model_class\":\"llm.classifier\"}"
+    }
+  ],
+  "stream": false,
+  "think": false,
+  "format": "json",
+  "keep_alive": "15m",
+  "options": {
+    "temperature": 0,
+    "num_predict": 160
+  }
+}
