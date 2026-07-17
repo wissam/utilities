@@ -13,3 +13,6 @@ Rules:
   help text, and output.
 - Do not store secrets in this repo.
 - `make install` should install human-invoked scripts into `$HOME/.local/bin`.
+- Scripts first created under `/tmp` belong in `raw_scripts/` until they are
+  reviewed and either promoted, merged, generalized, retained, or removed.
+- Do not install files from `raw_scripts/` through `make install`.

@@ -5,6 +5,11 @@ Reusable local helper scripts for Codex, Velastra, and operator workflows.
 The goal is to avoid repeatedly generating ad-hoc scripts during sessions.
 Helpers here should be safe, small, and reusable.
 
+Scripts first created as temporary agent helpers are preserved in
+[`raw_scripts/`](./raw_scripts/README.md). That directory is an unreviewed
+intake queue and is intentionally excluded from installation until individual
+scripts are promoted.
+
 ## Install
 
 ```sh
